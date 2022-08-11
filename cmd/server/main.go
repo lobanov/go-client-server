@@ -1,15 +1,24 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/jessevdk/go-flags"
+
+	pb "github.com/lobanov/go-client-server/protocol"
 )
 
 type Options struct {
-	Verbose bool `short:"v" long:"verbose" description:"Verbose output"`
-	Port    uint `short:"p" long:"port" description:"Port to listen to" default:"1234"`
+	Port uint `short:"p" long:"port" description:"Port to listen to" default:"1234"`
+}
+
+type productCatalogServer struct {
+}
+
+func (s *productCatalogServer) FetchProducts(context.Context, *pb.ProductsRequest) (*pb.ProductsResponse, error) {
+
 }
 
 var options Options

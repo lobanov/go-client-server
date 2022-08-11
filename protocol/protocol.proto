@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package server;
+
+option go_package = "github.com/lobanov/go-client-server/protocol";
+
+message Product {
+  string sku = 1;
+  string name = 2;
+}
+
+message ProductsRequest {
+  string sku = 1;
+}
+
+message ProductsResponse {
+  repeated Product products = 1;
+}
+
+service ProductCatalog {
+  rpc FetchProducts(ProductsRequest) returns (ProductsResponse);
+}
