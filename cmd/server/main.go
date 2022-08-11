@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
 	"os"
 
 	"github.com/jessevdk/go-flags"
+	"google.golang.org/grpc"
 
 	pb "github.com/lobanov/go-client-server/protocol"
 )
@@ -15,10 +18,16 @@ type Options struct {
 }
 
 type productCatalogServer struct {
+	pb.UnimplementedProductCatalogServer
 }
 
 func (s *productCatalogServer) FetchProducts(context.Context, *pb.ProductsRequest) (*pb.ProductsResponse, error) {
+	return &pb.ProductsResponse{Products: make([]*pb.Product, 0)}, nil
+}
 
+func newServer() *productCatalogServer {
+	s := &productCatalogServer{}
+	return s
 }
 
 var options Options
@@ -38,5 +47,15 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	fmt.Println(options)
+
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", options.Port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	var opts []grpc.ServerOption
+	grpcServer := grpc.NewServer(opts...)
+	pb.RegisterProductCatalogServer(grpcServer, newServer())
+	log.Printf("Listening on port %d", options.Port)
+	grpcServer.Serve(lis)
 }

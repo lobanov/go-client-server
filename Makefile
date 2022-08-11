@@ -1,12 +1,11 @@
-all: clean build
+all: clean gen build
 
 build:
-	go mod tidy
-	go build -o build/main main.go
+	go build -o bin/server cmd/server/main.go
 
 clean:
 	go clean
-	rm -rf build
+	rm -rf bin
 
 gen:
 	protoc -I=. --go_opt=paths=source_relative --go_out=. \
