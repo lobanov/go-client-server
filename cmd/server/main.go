@@ -19,14 +19,18 @@ type Options struct {
 
 type productCatalogServer struct {
 	pb.UnimplementedProductCatalogServer
+
+	products []*pb.Product
 }
 
 func (s *productCatalogServer) FetchProducts(context.Context, *pb.ProductsRequest) (*pb.ProductsResponse, error) {
-	return &pb.ProductsResponse{Products: make([]*pb.Product, 0)}, nil
+	return &pb.ProductsResponse{Products: s.products}, nil
 }
 
 func newServer() *productCatalogServer {
 	s := &productCatalogServer{}
+	s.products = make([]*pb.Product, 0, 10)
+	s.products = append(s.products, &pb.Product{Sku: "P001", Name: "Widget 1"})
 	return s
 }
 
