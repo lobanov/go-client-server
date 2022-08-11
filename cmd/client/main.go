@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
 	"os"
+	"time"
 
 	"github.com/jessevdk/go-flags"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	pb "github.com/lobanov/go-client-server/protocol"
 )
 
 type Options struct {
-	Port uint `short:"p" long:"port" description:"Port to listen to" default:"1234"`
+	ServerAddr string `short:"a" long:"address" description:"Server address to connect to" `
 }
 
 var options Options
@@ -28,5 +34,25 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	fmt.Println(options)
+
+	log.Printf("Connecting to %s", options.ServerAddr)
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	conn, err := grpc.Dial(options.ServerAddr, opts...)
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+	client := pb.NewProductCatalogClient(conn)
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	res, err := client.FetchProducts(ctx, &pb.ProductsRequest{})
+	if err != nil {
+		log.Fatalf("client.ListFeatures failed: %v", err)
+	}
+
+	log.Println(res.Products)
 }
